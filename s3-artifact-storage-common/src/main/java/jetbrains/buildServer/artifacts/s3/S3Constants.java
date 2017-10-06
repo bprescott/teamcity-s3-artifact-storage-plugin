@@ -18,5 +18,5 @@ public class S3Constants {
 
   public static final int DEFAULT_S3_URL_LIFETIME_SEC = 60;
 
-  public static final String ARTEFACTS_S3_UPLOAD_PRESIGN_URLS_HTML = "/artefacts/s3/upload/presign-urls.html";
+  public static final String ARTIFACTS_S3_UPLOAD_PRESIGN_URLS_HTML = "/artifacts/s3/upload/presign-urls.html";
 }

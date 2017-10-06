@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static jetbrains.buildServer.artifacts.s3.S3Constants.ARTEFACTS_S3_UPLOAD_PRESIGN_URLS_HTML;
+import static jetbrains.buildServer.artifacts.s3.S3Constants.ARTIFACTS_S3_UPLOAD_PRESIGN_URLS_HTML;
 
 /**
  * Created by Evgeniy Koshkin (evgeniy.koshkin@jetbrains.com) on 19.07.17.
@@ -44,7 +44,7 @@ public class S3PreSignedUrlController extends BaseController {
     myRunningBuildsCollection = runningBuildsCollection;
     myPreSignedUrlProvider = preSignedUrlProvider;
     myStorageSettingsProvider = storageSettingsProvider;
-    web.registerController(ARTEFACTS_S3_UPLOAD_PRESIGN_URLS_HTML, this);
+    web.registerController(ARTIFACTS_S3_UPLOAD_PRESIGN_URLS_HTML, this);
   }
 
   @Nullable

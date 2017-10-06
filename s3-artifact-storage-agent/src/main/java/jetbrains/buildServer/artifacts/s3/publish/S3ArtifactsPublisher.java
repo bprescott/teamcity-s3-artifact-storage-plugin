@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.Map;
 
 import static jetbrains.buildServer.artifacts.s3.S3Constants.*;
 import static jetbrains.buildServer.artifacts.s3.S3Util.getBucketName;
@@ -42,6 +43,10 @@ public class S3ArtifactsPublisher implements ArtifactsPublisher {
   private static final String HTTP_AUTH = "/httpAuth";
   private static final String APPLICATION_XML = "application/xml";
   private static final String UTF_8 = "UTF-8";
+  private static final String DEFAULT_VERSION = "v.unk";
+  private static final String DEFAULT_DEPLOY_TARGET = "unpublished";
+  private static final String VERSION_PARAMETER = "version";
+  private static final String DEPLOY_PARAMETER = "deploy_type";
 
   private static final Logger LOG = Logger.getInstance(S3ArtifactsPublisher.class.getName());
   private static final String ERROR_PUBLISHING_ARTIFACTS_LIST = "Error publishing artifacts list";
@@ -245,16 +250,32 @@ public class S3ArtifactsPublisher implements ArtifactsPublisher {
   @NotNull
   private String getPathPrefix(@NotNull AgentRunningBuild build) {
     final List<String> pathSegments = new ArrayList<String>();
+    final Map<String, String> buildParametersMap = build.getSharedConfigParameters();
+    String versionString=DEFAULT_VERSION;
+    String targetDeploy = DEFAULT_DEPLOY_TARGET;
+    if (buildParametersMap!=null) {
+      versionString = buildParametersMap.get(VERSION_PARAMETER);
+      if (versionString.isEmpty()) {
+        versionString = DEFAULT_VERSION;
+      }
+
+      targetDeploy = buildParametersMap.get(DEPLOY_PARAMETER);
+      if (targetDeploy.isEmpty()) {
+        targetDeploy = DEFAULT_DEPLOY_TARGET;
+      }
+    }
+    pathSegments.add(targetDeploy);
     pathSegments.add(build.getSharedConfigParameters().get(ServerProvidedProperties.TEAMCITY_PROJECT_ID_PARAM));
-    pathSegments.add(build.getBuildTypeExternalId());
-    pathSegments.add(Long.toString(build.getBuildId()));
-    return StringUtil.join("/", pathSegments) + "/";
+    pathSegments.add(versionString);
+    pathSegments.add(versionString+"."+build.getBuildNumber());
+    String retVal = StringUtil.join("/", pathSegments) + "/";
+    return retVal;
   }
 
   @NotNull
   private static Map<String, URL> resolveUploadUrls(AgentRunningBuild build, @NotNull Collection<String> s3ObjectKeys) throws IOException {
     BuildAgentConfiguration agentConfiguration = build.getAgentConfiguration();
-    String targetUrl = agentConfiguration.getServerUrl() + HTTP_AUTH + ARTEFACTS_S3_UPLOAD_PRESIGN_URLS_HTML;
+    String targetUrl = agentConfiguration.getServerUrl() + HTTP_AUTH + ARTIFACTS_S3_UPLOAD_PRESIGN_URLS_HTML;
     int connectionTimeout = agentConfiguration.getServerConnectionTimeout();
     UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(build.getAccessUser(), build.getAccessCode());
     HttpClient httpClient = HttpUtil.createHttpClient(connectionTimeout, new URL(targetUrl), credentials);
