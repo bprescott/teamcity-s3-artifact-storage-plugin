@@ -47,6 +47,8 @@ public class S3ArtifactsPublisher implements ArtifactsPublisher {
   private static final String DEFAULT_DEPLOY_TARGET = "unpublished";
   private static final String VERSION_PARAMETER = "version";
   private static final String DEPLOY_PARAMETER = "deploy_type";
+  private static final String BUILD_TARGET_PARAMETER = "build_target";
+  private static final String DEFAULT_BUILD_TARGET = "v.unk.00";
 
   private static final Logger LOG = Logger.getInstance(S3ArtifactsPublisher.class.getName());
   private static final String ERROR_PUBLISHING_ARTIFACTS_LIST = "Error publishing artifacts list";
@@ -253,21 +255,40 @@ public class S3ArtifactsPublisher implements ArtifactsPublisher {
     final Map<String, String> buildParametersMap = build.getSharedConfigParameters();
     String versionString=DEFAULT_VERSION;
     String targetDeploy = DEFAULT_DEPLOY_TARGET;
+    String buildTarget = versionString+"."+build.getBuildNumber();
     if (buildParametersMap!=null) {
       versionString = buildParametersMap.get(VERSION_PARAMETER);
-      if (versionString.isEmpty()) {
+      if (versionString !=null && versionString.isEmpty()) {
+        versionString = DEFAULT_VERSION;
+      }
+      else if (versionString==null)
+      {
         versionString = DEFAULT_VERSION;
       }
 
       targetDeploy = buildParametersMap.get(DEPLOY_PARAMETER);
-      if (targetDeploy.isEmpty()) {
+      if (targetDeploy !=null && targetDeploy.isEmpty()) {
         targetDeploy = DEFAULT_DEPLOY_TARGET;
+      }
+      else if (targetDeploy==null)
+      {
+        targetDeploy = DEFAULT_DEPLOY_TARGET;
+      }
+
+      buildTarget = buildParametersMap.get(BUILD_TARGET_PARAMETER);
+      if (buildTarget!=null && buildTarget.isEmpty()) {
+        buildTarget = versionString+"."+build.getBuildNumber();
+      }
+      else if (buildTarget == null) {
+        {
+          buildTarget = versionString+"."+build.getBuildNumber();
+        }
       }
     }
     pathSegments.add(targetDeploy);
     pathSegments.add(build.getSharedConfigParameters().get(ServerProvidedProperties.TEAMCITY_PROJECT_ID_PARAM));
     pathSegments.add(versionString);
-    pathSegments.add(versionString+"."+build.getBuildNumber());
+    pathSegments.add(buildTarget);
     String retVal = StringUtil.join("/", pathSegments) + "/";
     return retVal;
   }
