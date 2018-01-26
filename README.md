@@ -20,6 +20,7 @@ When installed and configured, the plugin:
 * handles resolution of artifact dependencies
 * handles clean-up of artifacts 
 * displays artifacts located in Amazon S3 in the TeamCity web UI.
+* creates a custom s3 tree structure to support unpublished,published, released etc.
 
 # Building 
 
@@ -49,6 +50,11 @@ To configure Amazon S3 storage for TeamCity artifacts, perform the following:
 5. Specify an existing S3 bucket to store artifacts.
 6. Save your settings.
 7. The configured S3 storage will appear on the Artifacts storage page. Make it active using the corresponding link.
+8. To setup the deployment path names in s3 you need to set a few parameters
+   version - the version of the artifact
+   build_target - this is the target directory for the build
+   deploy_type - this is the type of deployment (unpublished, published, released, experimental...)
+   The constructed path is target_deploy/project/version/build_target
 
 Now the artifacts of this project, its subprojects, and build configurations will be stored in the configured storage.
 
